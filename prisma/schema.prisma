@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User & Auth (Better Auth)
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String?  @unique
+  emailVerified Boolean?
+  image         String?
+  isAnonymous   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+
+  // Game relations
+  roomsHosted   Room[]
+  playerEntries Player[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id           String    @id
+  userId       String
+  accountId    String
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  password     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+}
+
+// Lobby & Game
+model Room {
+  id        String   @id @default(cuid())
+  code      String   @unique // 4-letter join code
+  status    String   @default("WAITING") // WAITING, PLAYING, FINISHED
+  hostId    String
+  createdAt DateTime @default(now())
+
+  host      User       @relation(fields: [hostId], references: [id])
+  players   Player[]
+  gameState GameState?
+}
+
+model Player {
+  id      String  @id @default(cuid())
+  name    String
+  isReady Boolean @default(false)
+
+  userId String? // Optional for guests
+  user   User?   @relation(fields: [userId], references: [id])
+
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+// JSON storage for complex game logic to avoid rigid schema
+model GameState {
+  id     String @id @default(cuid())
+  roomId String @unique
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  data      String // Stores deck, hands, space positions, oxygen levels (JSON string)
+  step      Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
