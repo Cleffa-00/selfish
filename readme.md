@@ -152,3 +152,5 @@ This project is for personal/educational use only. The original "Selfish: Space 
 ---
 
 *This project demonstrates proficiency in modern web development, real-time systems, and game logic implementation.*
+
+<!-- Last deployment trigger: 2025-12-15 -->
