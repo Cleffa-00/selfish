@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:ws": "tsx watch src/server/wsServer.ts",
     "dev:all": "concurrently \"npm:dev\" \"npm:dev:ws\"",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "build:ws": "tsc --project tsconfig.server.json",
     "start": "next start",
     "start:ws": "node dist/server/wsServer.js",
